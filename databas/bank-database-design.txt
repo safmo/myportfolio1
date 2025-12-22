@@ -1,0 +1,376 @@
+
+---Uppgift 1 - Skapa Tabeller----
+
+------Tabell bankkund------------
+CREATE TABLE bankkund ( 
+PNR VARCHAR2(11) NOT NULL PRIMARY KEY, 
+FNAMN VARCHAR2(25) NOT NULL, 
+ENAMN VARCHAR2(25) NOT NULL, 
+PASSWD VARCHAR2(16) NOT NULL );
+
+-------Tabell kontotyp------
+CREATE TABLE kontotyp ( 
+KTNR NUMBER(6) NOT NULL PRIMARY KEY, 
+KTNAMN VARCHAR2(20) NOT NULL, 
+RÄNTA NUMBER(5,2) NOT NULL );
+
+-----Tabell ränteändring------
+CREATE TABLE ränteändring ( 
+RNR NUMBER(6) NOT NULL PRIMARY KEY, 
+KTNR NUMBER(6) NOT NULL, 
+RÄNTA NUMBER(5,2) NOT NULL, 
+RNR_DATUM DATE NOT NULL, 
+CONSTRAINT fk_kontotyp_ranteandring FOREIGN KEY (KTNR) REFERENCES kontotyp(KTNR) );
+
+----Tabell konto---------
+CREATE TABLE konto ( 
+KNR NUMBER(8) NOT NULL PRIMARY KEY, 
+KTNR NUMBER(6) NOT NULL, 
+REGDATUM DATE NOT NULL, 
+SALDO NUMBER(10,2),
+CONSTRAINT fk_kontotyp_konto FOREIGN KEY (KTNR) REFERENCES kontotyp(KTNR)); 
+
+---Tabell kontoägare-------
+CREATE TABLE kontoägare ( 
+RADNR NUMBER(9) NOT NULL PRIMARY KEY, 
+PNR VARCHAR2(11) NOT NULL, 
+KNR NUMBER(8) NOT NULL, 
+CONSTRAINT fk_bankkund_kontoagare FOREIGN KEY (PNR) REFERENCES bankkund(PNR), 
+CONSTRAINT fk_konto_kontoagare FOREIGN KEY (KNR) REFERENCES konto(KNR));
+ 
+ ----Tabell uttag----	
+CREATE TABLE uttag ( 
+RADNR NUMBER(9) NOT NULL PRIMARY KEY, 
+PNR VARCHAR2(11) NOT NULL, 
+KNR NUMBER(8) NOT NULL, 
+BELOPP NUMBER(10,2), 
+DATUM DATE NOT NULL, 
+CONSTRAINT fk_bankkund_uttag FOREIGN KEY (PNR) REFERENCES bankkund(PNR), 
+CONSTRAINT fk_konto_uttag FOREIGN KEY (KNR) REFERENCES konto(KNR)); 
+
+---Tabell insättning---
+CREATE TABLE insättning ( 
+RADNR NUMBER(9) NOT NULL PRIMARY KEY, 
+PNR VARCHAR2(11) NOT NULL, 
+KNR NUMBER(8) NOT NULL, 
+BELOPP NUMBER(10,2), 
+DATUM DATE NOT NULL, 
+CONSTRAINT fk_bankkund_insättning FOREIGN KEY (PNR) REFERENCES bankkund(PNR), 
+CONSTRAINT fk_konto_insättning FOREIGN KEY (KNR) REFERENCES konto(KNR) );
+	
+	
+---Tabell överföring------
+CREATE TABLE överföring ( 
+RADNR NUMBER(9) NOT NULL PRIMARY KEY, 
+PNR VARCHAR2(11) NOT NULL, 
+FRÅN_KNR NUMBER(8) NOT NULL, 
+TILL_KNR NUMBER(8) NOT NULL, 
+BELOPP NUMBER(10,2), 
+DATUM DATE NOT NULL, 
+CONSTRAINT fk_bankkund_overföring FOREIGN KEY (PNR) REFERENCES bankkund(PNR), 
+CONSTRAINT fk_från_konto FOREIGN KEY (FRÅN_KNR) REFERENCES konto(KNR), 
+CONSTRAINT fk_till_konto FOREIGN KEY (TILL_KNR) REFERENCES konto(KNR)); 
+
+---Uppgift 2 - Skapa 3NF----Se bifogad bild--
+
+---Uppgift 3 - Skapa trigger---
+CREATE OR REPLACE TRIGGER biufer_bankkund
+BEFORE INSERT OR UPDATE ON bankkund
+FOR EACH ROW
+DECLARE
+passwd_length NUMBER(2);
+BEGIN
+passwd_length := LENGTH(:NEW.PASSWD);
+IF (passwd_length <> 6) THEN
+RAISE_APPLICATION_ERROR(-20001, 'Lösenordet måste vara exakt sex tecken långt.');
+END IF;
+END;
+
+--Uppgift 4 - Skapa procedur-----
+CREATE OR REPLACE PROCEDURE do_bankkund (
+pnr IN bankkund.pnr%TYPE,
+fnamn IN bankkund.fnamn%TYPE,
+enamn IN bankkund.enamn%TYPE,
+passwd IN bankkund.passwd%TYPE)
+AS
+BEGIN
+INSERT INTO bankkund (pnr, fnamn, enamn, passwd)
+VALUES (pnr, fnamn, enamn, passwd);
+COMMIT;
+DBMS_OUTPUT.PUT_LINE('Ny kund tillagd.');
+EXCEPTION
+WHEN OTHERS THEN
+ROLLBACK;
+DBMS_OUTPUT.PUT_LINE('Något gick fel, prova igen med korrekt syntax: ' || SQLERRM);
+END;
+
+---Uppgift 5 - Lägg till fyra kunder---
+BEGIN
+do_bankkund('540126-1111','Hans','Rosendahl','olle45');
+do_bankkund('560126-1111','Hans','Rosengårdh','olle85');
+do_bankkund('540126-1457','Lina','Karlsson','asdfgh');
+do_bankkund('691124-4478','Leena','Kvist','qwerty');
+COMMIT;
+END;
+---Trigger Test---
+EXEC do_bankkund('691124-4478','Leena','Kvist','qwe');
+
+------Uppgift 6 - Skapa Sekvens---------
+--radnr_seq--
+CREATE SEQUENCE radnr_seq;
+-----radnr_seq - lägg till tabeller-----
+INSERT INTO kontotyp(ktnr,ktnamn,ränta)
+VALUES(1,'bondkonto',3.4);
+INSERT INTO kontotyp(ktnr,ktnamn,ränta)
+VALUES(2,'potatiskonto',4.4);
+INSERT INTO kontotyp(ktnr,ktnamn,ränta)
+VALUES(3,'griskonto',2.4);
+COMMIT;
+INSERT INTO konto(knr,ktnr,regdatum,saldo)
+VALUES(123,1,SYSDATE - 321,0);
+INSERT INTO konto(knr,ktnr,regdatum,saldo)
+VALUES(5899,2,SYSDATE - 2546,0);
+INSERT INTO konto(knr,ktnr,regdatum,saldo)
+VALUES(5587,3,SYSDATE - 10,0);
+INSERT INTO konto(knr,ktnr,regdatum,saldo)
+VALUES(8896,1,SYSDATE - 45,0);
+COMMIT;
+INSERT INTO kontoägare(radnr,pnr,knr)
+VALUES(radnr_seq.NEXTVAL,'540126-1111',123);
+INSERT INTO kontoägare(radnr,pnr,knr)
+VALUES(radnr_seq.NEXTVAL,'691124-4478',123);
+INSERT INTO kontoägare(radnr,pnr,knr)
+VALUES(radnr_seq.NEXTVAL,'540126-1111',5899);
+INSERT INTO kontoägare(radnr,pnr,knr)
+VALUES(radnr_seq.NEXTVAL,'691124-4478',8896);
+COMMIT;
+-----Uppgift 7 - Skapa funktion-Logga_in-----
+CREATE OR REPLACE FUNCTION logga_in (
+p_pnr IN bankkund.pnr%TYPE,
+p_passwd IN bankkund.passwd%TYPE)
+RETURN INTEGER
+IS
+ v_result INTEGER := 0;
+BEGIN
+SELECT COUNT(*) INTO v_result
+FROM bankkund
+WHERE pnr = p_pnr AND passwd = p_passwd;   
+IF v_result = 1 THEN
+RETURN 1;
+ELSE
+RETURN 0;
+END IF;
+EXCEPTION
+WHEN OTHERS THEN
+RETURN 0;
+END;
+----logga_in - Test----
+SELECT logga_in('540126-1111', 'olle45') FROM dual;
+SELECT logga_in('560126-1111', 'olle85') FROM dual;
+SELECT logga_in('540126-1457', 'asdfgh') FROM dual;
+SELECT logga_in('691124-4478', 'qwerty') FROM dual;
+
+----Uppgift 8 - Skapa funktion-get_saldo-----
+CREATE OR REPLACE FUNCTION get_saldo (knr IN NUMBER)
+RETURN NUMBER
+IS
+saldo NUMBER(10,2);
+BEGIN
+SELECT SALDO INTO saldo
+FROM konto
+WHERE KNR = knr AND ROWNUM = 1; 
+RETURN saldo;
+EXCEPTION
+WHEN NO_DATA_FOUND THEN
+RETURN NULL;
+END;
+	
+---display all accounts--
+SELECT KNR, COUNT(*)
+FROM konto
+GROUP BY KNR;
+--get_saldo - Test--
+SELECT get_saldo(123) FROM dual;
+SELECT get_saldo(5899) FROM dual;
+
+----Uppgift 9 - Skapa funktion -get_behörighet---
+CREATE OR REPLACE FUNCTION get_behörighet(p_pnr IN VARCHAR2, p_knr IN NUMBER)
+RETURN NUMBER
+AS
+v_count NUMBER;
+BEGIN
+SELECT COUNT(*) INTO v_count
+FROM kontoägare
+WHERE PNR = p_pnr AND KNR = p_knr;
+IF v_count > 0 THEN
+RETURN 1;
+ELSE
+RETURN 0;
+END IF;
+EXCEPTION
+WHEN NO_DATA_FOUND THEN
+RETURN 0;
+END;
+------get_behörighet - Test-----
+SELECT get_behörighet('540126-1111', 123) as is_owner FROM dual;
+SELECT get_behörighet('691124-4478', 123) as is_owner FROM dual;
+SELECT get_behörighet('540126-1111', 5899) as is_owner FROM dual;
+SELECT get_behörighet('691124-4478', 8896) as is_owner FROM dual;
+
+------Uppgift 10 - Skapa trigger- aifer_insättning----
+CREATE OR REPLACE TRIGGER aifer_insättning
+AFTER INSERT ON insättning
+FOR EACH ROW
+BEGIN
+UPDATE konto
+SET saldo = saldo + :new.belopp
+WHERE knr = :new.knr;
+END;
+
+---Uppgift 11 - Skapa trigger-bifer_uttag---
+CREATE OR REPLACE TRIGGER bifer_uttag
+BEFORE INSERT ON uttag
+FOR EACH ROW
+DECLARE
+saldo_konto number(10,2);
+BEGIN
+SELECT saldo INTO saldo_konto FROM konto WHERE knr = :new.knr;
+IF (saldo_konto - :new.belopp) < 0 THEN
+raise_application_error(-20001, 'Det finns inte tillräckligt med pengar på kontot');
+END IF;
+END;
+
+----Uppgift 12 - Skapa trigger-aifer_uttag---
+CREATE OR REPLACE TRIGGER aifer_uttag
+AFTER INSERT ON uttag
+FOR EACH ROW
+BEGIN
+UPDATE konto SET saldo = saldo - :new.belopp WHERE knr = :new.knr;
+END;
+
+------Uppgift 13 - Skapa trigger-bifer_överföring----
+CREATE OR REPLACE TRIGGER bifer_överföring
+BEFORE INSERT ON överföring
+FOR EACH ROW
+DECLARE
+belopp_från_konto NUMBER(10,2);
+BEGIN
+SELECT saldo INTO belopp_från_konto
+FROM konto
+WHERE knr = :new.från_knr;
+IF (belopp_från_konto < :new.belopp) THEN
+RAISE_APPLICATION_ERROR(-20001, 'Det finns inte tillräckligt med pengar på belastningskontot!');
+END IF;
+END;
+
+----Uppgift 14 - Skapa trigger-aifer_överföring----
+CREATE OR REPLACE TRIGGER aifer_överföring
+AFTER INSERT ON överföring
+FOR EACH ROW
+DECLARE
+saldo_från NUMBER(10,2);
+saldo_till NUMBER(10,2);
+BEGIN
+SELECT saldo INTO saldo_från FROM konto WHERE knr = :new.från_knr;
+SELECT saldo INTO saldo_till FROM konto WHERE knr = :new.till_knr;
+UPDATE konto SET saldo = saldo_från - :new.belopp WHERE knr = :new.från_knr;
+UPDATE konto SET saldo = saldo_till + :new.belopp WHERE knr = :new.till_knr;
+END;
+
+-----Uppgift 15 Skapa procedur-create sequence--
+CREATE SEQUENCE insättning_seq START WITH 1 INCREMENT BY 1;
+---do_insättning-----
+CREATE OR REPLACE PROCEDURE do_insättning(
+p_pnr IN VARCHAR2,
+p_knr IN NUMBER,
+p_belopp IN NUMBER)
+IS
+v_saldo NUMBER(10,2);
+BEGIN
+SELECT saldo INTO v_saldo FROM konto WHERE knr = p_knr;
+UPDATE konto SET saldo = saldo + p_belopp WHERE knr = p_knr;
+INSERT INTO insättning(radnr, pnr, knr, belopp, datum)
+VALUES (insättning_seq.NEXTVAL, p_pnr, p_knr, p_belopp, SYSDATE);
+DBMS_OUTPUT.PUT_LINE('Din saldo är: ' || (v_saldo + p_belopp));
+COMMIT;
+EXCEPTION
+WHEN NO_DATA_FOUND THEN
+DBMS_OUTPUT.PUT_LINE('Kontot finns ej, prova igen.');
+WHEN OTHERS THEN
+DBMS_OUTPUT.PUT_LINE('Error: ' || SQLERRM);
+ROLLBACK;
+END;
+------Uppgift 16 - Testa procedur-Testa insättning--
+EXECUTE do_insättning('540126-1111', 123, 1000);
+
+-----Uppgift 17 Skapa sekvens och procedur-
+CREATE SEQUENCE uttag_seq START WITH 1 INCREMENT BY 1;
+
+------do_uttag------
+CREATE OR REPLACE PROCEDURE do_uttag(
+p_pnr IN VARCHAR2,
+p_knr IN NUMBER,
+p_belopp IN NUMBER)
+AS
+v_behorighet VARCHAR2(10);
+v_saldo konto.saldo%TYPE;
+obehörig EXCEPTION;
+BEGIN
+v_behorighet := get_behörighet(p_pnr, p_knr);  
+IF v_behorighet = 'OBEHÖRIG' THEN
+RAISE obehörig;
+ELSE
+UPDATE konto SET saldo = saldo - p_belopp WHERE knr = p_knr;
+INSERT INTO uttag (radnr, pnr, knr, belopp, datum) 
+VALUES (uttag_seq.NEXTVAL, p_pnr, p_knr, p_belopp, SYSDATE);
+SELECT saldo INTO v_saldo FROM konto WHERE knr = p_knr;
+DBMS_OUTPUT.PUT_LINE('Uttag utfört. Saldo: ' || v_saldo);
+END IF;
+EXCEPTION
+WHEN obehörig THEN
+DBMS_OUTPUT.PUT_LINE('OBEHÖRIG: Ej tillåtet att ta ut pengar från detta konto.');
+END;
+
+------Uppgift 18 - Testa procedur-----
+EXECUTE do_uttag('540126-1111', 123, 2000); --Gick inte eftersom saldo enbart är 1000.
+EXECUTE do_uttag('540126-1111', 123, 500); --Fungerade eftersom saldo var över 500 så gick det att ta ut och nu står det "Uttag utfört. Saldo:500"
+
+------Uppgift 19 - Skapa procedur-create sequence----
+CREATE SEQUENCE överföring_seq START WITH 1 INCREMENT BY 1;
+----do_överföring---
+CREATE OR REPLACE PROCEDURE do_överföring(PNR IN VARCHAR2, FRÅN_KNR IN NUMBER, TILL_KNR IN NUMBER, BELOPP IN NUMBER) AS
+saldo_före_från NUMBER(10,2);
+saldo_före_till NUMBER(10,2);
+saldo_efter_från NUMBER(10,2);
+saldo_efter_till NUMBER(10,2);
+obehörig EXCEPTION;
+BEGIN
+SELECT konto.saldo INTO saldo_före_från FROM konto, kontoägare WHERE konto.knr = kontoägare.knr AND konto.knr = FRÅN_KNR AND kontoägare.pnr = PNR AND ROWNUM = 1;
+SELECT konto.saldo INTO saldo_före_till FROM konto, kontoägare WHERE konto.knr = kontoägare.knr AND konto.knr = TILL_KNR AND kontoägare.pnr = PNR AND ROWNUM = 1;
+IF saldo_före_från IS NULL OR saldo_före_till IS NULL THEN
+RAISE obehörig;
+ELSE
+saldo_efter_från := saldo_före_från - BELOPP;
+saldo_efter_till := saldo_före_till + BELOPP;
+UPDATE konto SET saldo = saldo_efter_från WHERE knr = FRÅN_KNR;
+UPDATE konto SET saldo = saldo_efter_till WHERE knr = TILL_KNR;
+INSERT INTO överföring VALUES (överföring_seq.nextval, PNR, FRÅN_KNR, TILL_KNR, BELOPP, SYSDATE);
+DBMS_OUTPUT.PUT_LINE('Saldo för konto ' || FRÅN_KNR || ' är ' || saldo_efter_från || ' kr');
+DBMS_OUTPUT.PUT_LINE('Saldo för konto ' || TILL_KNR || ' är ' || saldo_efter_till || ' kr');
+END IF;
+EXCEPTION
+WHEN obehörig THEN
+DBMS_OUTPUT.PUT_LINE('Obehörig åtgärd - du måste vara ägare till båda kontona för att göra en överföring.');
+END;
+
+------Uppgift 20 - Testa procedur-Visa Saldo-----
+SELECT get_saldo(123) FROM dual;
+SELECT get_saldo(5899) FROM dual;
+---Insättning---
+EXECUTE do_insättning('540126-1111', 123, 3000);
+--do_övering - Test
+EXECUTE do_överföring('540126-1111', 123, 5899, 500);
+--Statement processed.
+
+
+-----Uppgift 21 reflation 
