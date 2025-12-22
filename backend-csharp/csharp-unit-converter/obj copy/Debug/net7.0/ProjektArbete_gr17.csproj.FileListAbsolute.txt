@@ -1,0 +1,15 @@
+/Users/intesarhassenmahamed/Projects/ProjektArbete_gr17/ProjektArbete_gr17/bin/Debug/net7.0/ProjektArbete_gr17
+/Users/intesarhassenmahamed/Projects/ProjektArbete_gr17/ProjektArbete_gr17/bin/Debug/net7.0/ProjektArbete_gr17.deps.json
+/Users/intesarhassenmahamed/Projects/ProjektArbete_gr17/ProjektArbete_gr17/bin/Debug/net7.0/ProjektArbete_gr17.runtimeconfig.json
+/Users/intesarhassenmahamed/Projects/ProjektArbete_gr17/ProjektArbete_gr17/bin/Debug/net7.0/ProjektArbete_gr17.dll
+/Users/intesarhassenmahamed/Projects/ProjektArbete_gr17/ProjektArbete_gr17/bin/Debug/net7.0/ProjektArbete_gr17.pdb
+/Users/intesarhassenmahamed/Projects/ProjektArbete_gr17/ProjektArbete_gr17/obj/Debug/net7.0/ProjektArbete_gr17.csproj.AssemblyReference.cache
+/Users/intesarhassenmahamed/Projects/ProjektArbete_gr17/ProjektArbete_gr17/obj/Debug/net7.0/ProjektArbete_gr17.GeneratedMSBuildEditorConfig.editorconfig
+/Users/intesarhassenmahamed/Projects/ProjektArbete_gr17/ProjektArbete_gr17/obj/Debug/net7.0/ProjektArbete_gr17.AssemblyInfoInputs.cache
+/Users/intesarhassenmahamed/Projects/ProjektArbete_gr17/ProjektArbete_gr17/obj/Debug/net7.0/ProjektArbete_gr17.AssemblyInfo.cs
+/Users/intesarhassenmahamed/Projects/ProjektArbete_gr17/ProjektArbete_gr17/obj/Debug/net7.0/ProjektArbete_gr17.csproj.CoreCompileInputs.cache
+/Users/intesarhassenmahamed/Projects/ProjektArbete_gr17/ProjektArbete_gr17/obj/Debug/net7.0/ProjektArbete_gr17.dll
+/Users/intesarhassenmahamed/Projects/ProjektArbete_gr17/ProjektArbete_gr17/obj/Debug/net7.0/refint/ProjektArbete_gr17.dll
+/Users/intesarhassenmahamed/Projects/ProjektArbete_gr17/ProjektArbete_gr17/obj/Debug/net7.0/ProjektArbete_gr17.pdb
+/Users/intesarhassenmahamed/Projects/ProjektArbete_gr17/ProjektArbete_gr17/obj/Debug/net7.0/ProjektArbete_gr17.genruntimeconfig.cache
+/Users/intesarhassenmahamed/Projects/ProjektArbete_gr17/ProjektArbete_gr17/obj/Debug/net7.0/ref/ProjektArbete_gr17.dll
